@@ -381,7 +381,7 @@ function Formulaire({
                     className="bouton bouton-jaune"
                     disabled={actionPublication.enCours || modifie}
                     onClick={async () => {
-                      if (!window.confirm('Publier ? Le client verra le compte rendu, les anomalies et les fichiers déposés.')) return;
+                      if (!window.confirm('Publier ? Le client verra le compte rendu, les anomalies, les photos et les fichiers déposés, et ses contacts seront prévenus par e-mail.')) return;
                       const { ok } = await actionPublication.executer(() => definirPublication(intervention.id, true), 'Intervention publiée.');
                       if (ok) recharger();
                     }}
@@ -394,17 +394,17 @@ function Formulaire({
             </section>
 
             <section className="carte">
-              <h2>Rapport et documents</h2>
+              <h2>Rapport, photos et documents</h2>
               {intervention.publiee && (
                 <p className="aide" style={{ marginTop: 0 }}>
-                  Intervention publiée : un fichier déposé ici est immédiatement visible par le client.
+                  Intervention publiée : un fichier ou une photo déposé ici est immédiatement visible par le client.
                 </p>
               )}
               <GestionFichiers
                 cible={{ intervention_id: intervention.id }}
                 organisationId={site.organisation_id}
                 siteId={site.id}
-                typesProposes={['rapport', 'document']}
+                typesProposes={['rapport', 'photo_avant', 'photo_apres', 'document']}
                 surChangement={recharger}
               />
             </section>

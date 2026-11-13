@@ -5,6 +5,8 @@ export type TypeInstallation = 'sol' | 'trackers' | 'toiture' | 'ombriere';
 export type TypeIntervention = 'nettoyage' | 'debroussaillage_interieur' | 'old' | 'elagage' | 'autre';
 export type StatutIntervention = 'proposee' | 'confirmee' | 'realisee' | 'annulee';
 export type TypeFichier = 'rapport' | 'photo_avant' | 'photo_apres' | 'document';
+export type TypeDemande = 'nouvelle_intervention' | 'devis' | 'probleme' | 'changement_date';
+export type StatutDemande = 'envoyee' | 'prise_en_compte' | 'traitee';
 
 /** Date sans heure, au format AAAA-MM-JJ (ex. « 2026-11-13 »). */
 export type DateISO = string;
@@ -17,6 +19,7 @@ export interface Profil {
   telephone: string | null;
   email: string;
   role: RoleUtilisateur;
+  recoit_emails: boolean;
 }
 
 export interface Organisation {
@@ -101,4 +104,19 @@ export interface ChiffresAnnee {
   surface_nettoyee_m2: number;
   surface_debroussaillee_ha: number;
   nombre_interventions: number;
+}
+
+export interface Demande {
+  id: string;
+  organisation_id: string;
+  site_id: string | null;
+  intervention_id: string | null;
+  auteur_id: string | null;
+  type: TypeDemande;
+  message: string;
+  date_souhaitee: DateISO | null;
+  statut: StatutDemande;
+  reponse: string | null;
+  creee_le: string;
+  modifie_le: string;
 }

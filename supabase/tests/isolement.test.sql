@@ -303,6 +303,59 @@ begin
     n := pg_temp.ecrire(ca, 'update public.demandes set statut = ''traitee'', reponse = ''x''');
     r := r || row('Un client ne peut pas modifier le statut d''une demande', n <= 0, 'lignes : ' || n)::pg_temp.ligne_test;
 
+    -- -----------------------------------------------------------------------
+    -- 6 bis. Demandes liées à un passage et e-mails automatiques (migration 6)
+    -- -----------------------------------------------------------------------
+    n := pg_temp.ecrire(ca, 'insert into public.demandes (organisation_id, intervention_id, type, message) values (' || org_a || ', ' || int_b || ', ''changement_date'', ''x'')');
+    r := r || row('Demande : impossible de viser un passage de B', n <= 0, 'lignes : ' || n)::pg_temp.ligne_test;
+    n := pg_temp.ecrire(ca, 'insert into public.demandes (organisation_id, intervention_id, type, message) values (' || org_a || ', ' || int_a_nonpub || ', ''changement_date'', ''x'')');
+    r := r || row('Demande : impossible de viser un passage non publié (invisible)', n <= 0, 'lignes : ' || n)::pg_temp.ligne_test;
+    n := pg_temp.ecrire(ca, 'insert into public.demandes (organisation_id, intervention_id, type, message, date_souhaitee) values (' || org_a || ', ' || int_a_planif || ', ''changement_date'', ''Décaler d''''une semaine'', current_date + 20)');
+    r := r || row('Demande de changement de date sur son propre passage', n = 1, 'lignes : ' || n)::pg_temp.ligne_test;
+    select count(*) into n from public.demandes where intervention_id = 'a3000000-0000-4000-8000-000000000011' and site_id = 'a2000000-0000-4000-8000-000000000001';
+    r := r || row('Demande de changement de date : site renseigné automatiquement', n = 1, 'trouvées : ' || n)::pg_temp.ligne_test;
+
+    select count(*) into n from public.emails where type = 'nouvelle_demande' and destinataire = 'admin.demo@example.com';
+    r := r || row('E-mail « nouvelle demande » envoyé à l''équipe ACG', n >= 1, 'e-mails : ' || n)::pg_temp.ligne_test;
+    select count(*) into n from public.emails where type = 'nouvelle_demande' and destinataire like 'client%';
+    r := r || row('E-mail « nouvelle demande » jamais envoyé à un client', n = 0, 'e-mails : ' || n)::pg_temp.ligne_test;
+
+    n := pg_temp.ecrire(adm, 'update public.demandes set reponse = ''Accordé pour le 3.'', statut = ''traitee'' where intervention_id = ' || int_a_planif);
+    select count(*) into n from public.emails where type = 'reponse_demande' and destinataire = 'client.demo.a@example.com';
+    r := r || row('E-mail « réponse à la demande » envoyé à son auteur', n = 1, 'e-mails : ' || n)::pg_temp.ligne_test;
+
+    -- Publication sur le site A2 (Mistral) : contact A + contact limité à A2, jamais B.
+    update public.interventions set publiee = false where id = 'a3000000-0000-4000-8000-000000000002';
+    n := pg_temp.ecrire(adm, 'update public.interventions set publiee = true where id = ''a3000000-0000-4000-8000-000000000002''');
+    select count(*) into n from public.emails where type = 'rapport_publie' and donnees ->> 'intervention_id' = 'a3000000-0000-4000-8000-000000000002';
+    r := r || row('E-mail « rapport publié » aux 2 contacts ayant accès au site', n = 2, 'e-mails : ' || n)::pg_temp.ligne_test;
+    select count(*) into n from public.emails where destinataire = 'client.demo.b@example.com';
+    r := r || row('Aucun e-mail sur les sites de A n''est adressé à B', n = 0, 'e-mails : ' || n)::pg_temp.ligne_test;
+    -- Publication sur le site A1 : le contact limité à A2 n'est pas prévenu.
+    update public.interventions set publiee = false where id = 'a3000000-0000-4000-8000-000000000001';
+    update public.interventions set publiee = true where id = 'a3000000-0000-4000-8000-000000000001';
+    select count(*) into n from public.emails where type = 'rapport_publie' and donnees ->> 'intervention_id' = 'a3000000-0000-4000-8000-000000000001' and destinataire = 'client.demo.a.limite@example.com';
+    r := r || row('Contact limité : pas d''e-mail pour un site hors de son accès', n = 0, 'e-mails : ' || n)::pg_temp.ligne_test;
+
+    -- Rappel J-7 d'un passage confirmé ; contact qui refuse les e-mails exclu.
+    update public.interventions set debut_prevu = public.aujourdhui() + 7, fin_prevue = public.aujourdhui() + 7 where id = 'a3000000-0000-4000-8000-000000000011';
+    update public.interventions set debut_prevu = public.aujourdhui() + 7, fin_prevue = public.aujourdhui() + 7 where id = 'a3000000-0000-4000-8000-000000000013';
+    update public.interventions set statut = 'confirmee' where id = 'a3000000-0000-4000-8000-000000000013';
+    update public.profils set recoit_emails = false where id = cal;
+    perform public.planifier_rappels();
+    perform public.planifier_rappels();  -- relancé : pas de doublon
+    select count(*) into n from public.emails where type = 'rappel_passage';
+    r := r || row('Rappels J-7 : un par passage confirmé et par contact, sans doublon', n = 2, 'e-mails : ' || n)::pg_temp.ligne_test;
+    select count(*) into n from public.emails where type = 'rappel_passage' and destinataire = 'client.demo.a.limite@example.com';
+    r := r || row('Contact qui refuse les e-mails : aucun rappel', n = 0, 'e-mails : ' || n)::pg_temp.ligne_test;
+
+    n := pg_temp.compter(ca, 'select 1 from public.emails');
+    r := r || row('Un client ne lit pas la boîte d''envoi des e-mails', n <= 0, 'vus : ' || n)::pg_temp.ligne_test;
+    n := pg_temp.compter(ca, 'select public.planifier_rappels()');
+    r := r || row('Un client ne peut pas déclencher les rappels', n <= 0, 'résultat : ' || n)::pg_temp.ligne_test;
+    n := pg_temp.compter(ca, 'select * from public.reserver_emails(10)');
+    r := r || row('Un client ne peut pas réserver les e-mails à envoyer', n <= 0, 'résultat : ' || n)::pg_temp.ligne_test;
+
     -- État des comptes (migration 5) : réservé aux administrateurs.
     n := pg_temp.compter(ca, 'select 1 from public.etat_comptes()');
     r := r || row('Un client ne voit pas l''état des comptes (invitations, connexions)', n <= 0, 'vus : ' || n)::pg_temp.ligne_test;

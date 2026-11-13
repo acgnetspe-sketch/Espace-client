@@ -6,12 +6,14 @@ Espace sécurisé où chaque exploitant client d'ACG NET SPE (nettoyage et débr
 - Mise en place de la base de données : [docs/GUIDE_SUPABASE.md](docs/GUIDE_SUPABASE.md)
 - Mise en ligne d'essai et vérification des écrans client : [docs/GUIDE_ETAPE_2.md](docs/GUIDE_ETAPE_2.md)
 - Administration (fonction d'invitation, essais) : [docs/GUIDE_ETAPE_3.md](docs/GUIDE_ETAPE_3.md)
+- Photos, demandes et e-mails automatiques : [docs/GUIDE_ETAPE_4.md](docs/GUIDE_ETAPE_4.md)
 
 ## Technique
 
 - Interface : Vite, React 19, React Router et TypeScript ; police Inter hébergée avec le site (aucun appel à Google)
 - Base de données, connexion par lien magique, fichiers privés : Supabase, région Paris (eu-west-3)
 - Hébergement de l'interface : Netlify
+- E-mails automatiques : Brevo (société française, données dans l'UE), appelé par une Edge Function
 
 ## Avancement
 
@@ -20,7 +22,7 @@ Espace sécurisé où chaque exploitant client d'ACG NET SPE (nettoyage et débr
 | 1 | Tables, règles de sécurité, données de démonstration, tests d'isolement | Fait |
 | 2 | Connexion par lien magique et écrans client en lecture | Fait |
 | 3 | Écrans administrateur : clients et invitations, sites et import CSV, interventions, rapports PDF, publication | Fait |
-| 4 | Photos, demandes, e-mails automatiques (V2) | À faire |
+| 4 | Photos avant/après, demandes des clients, e-mails automatiques (V2) | Fait |
 | 5 | Mise en ligne sur Netlify | À faire |
 
 ## Organisation du dépôt
@@ -31,8 +33,9 @@ src/
   composants/      Éléments communs (en-tête, badges, boutons de fichiers)
   pages/           Un fichier par écran (pages/admin : administration ACG)
 supabase/
-  migrations/      Schéma et sécurité, à appliquer dans l'ordre (1 à 5)
-  functions/       Edge Function « admin-contacts » (invitations, suppression de comptes)
+  migrations/      Schéma et sécurité, à appliquer dans l'ordre (1 à 6)
+  functions/       Edge Functions : admin-contacts (invitations), envoyer-emails (e-mails automatiques)
+  taches_planifiees.sql   Envoi des e-mails toutes les 5 minutes, rappels J-7 (à lancer une fois)
   seed.sql         Données de démonstration fictives
   tests/
     isolement.test.sql   Tests d'isolement entre clients (éditeur SQL de Supabase)
@@ -49,6 +52,8 @@ docs/              Guides
 - Les notes internes sont dans des tables réservées aux administrateurs.
 - Les fichiers sont dans un stockage privé et se téléchargent par lien signé valable 1 heure. Un fichier n'est lisible que s'il est référencé dans la table `fichiers` et visible par la personne.
 - Les comptes de connexion sont créés et supprimés par l'Edge Function `admin-contacts`, qui garde la clé secrète côté serveur et vérifie à chaque appel que l'appelant est administrateur.
+- Les e-mails automatiques passent par une boîte d'envoi en base : les destinataires y sont calculés avec les mêmes règles que l'écran (un contact n'est jamais prévenu pour un site qu'il ne voit pas). Le texte saisi par les utilisateurs est neutralisé dans les e-mails.
+- Les photos sont réduites dans le navigateur (2000 px, JPEG) avant l'envoi, et suivent les mêmes règles que les rapports : visibles du client seulement après publication.
 - Aucune clé secrète dans le dépôt : `.env` est ignoré par Git, et `.env.example` ne contient pas de valeurs.
 - Le dépôt ne contient que des données fictives.
 
@@ -68,5 +73,5 @@ Pour que le lien magique fonctionne en local, ajouter `http://127.0.0.1:5173/**`
 
 - **Dans Supabase** : coller `supabase/tests/isolement.test.sql` dans l'éditeur SQL. Chaque ligne du tableau doit afficher « OK ».
 - **En local** (PostgreSQL 15 ou plus récent) : `bash supabase/tests/local/lancer_tests.sh`
-- **Formats et import CSV** : `npm test`
+- **Formats, import CSV, photos, mise en forme des e-mails** : `npm test`
 - **Automatiquement** : à chaque envoi sur GitHub, l'onglet *Actions* relance les tests d'isolement, les tests de formats et la construction de l'application (« Tests de sécurité »).

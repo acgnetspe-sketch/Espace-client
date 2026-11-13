@@ -15,6 +15,7 @@ import { FicheSite } from './pages/FicheSite';
 import { FicheIntervention } from './pages/FicheIntervention';
 import { Planning } from './pages/Planning';
 import { MonCompte } from './pages/MonCompte';
+import { Demandes } from './pages/Demandes';
 import { MentionsLegales } from './pages/MentionsLegales';
 import { CompteNonActive } from './pages/CompteNonActive';
 import { AdminAccueil } from './pages/admin/AdminAccueil';
@@ -25,6 +26,8 @@ import { AdminSite } from './pages/admin/AdminSite';
 import { AdminImportSites } from './pages/admin/AdminImportSites';
 import { AdminInterventions } from './pages/admin/AdminInterventions';
 import { AdminIntervention } from './pages/admin/AdminIntervention';
+import { AdminDemandes } from './pages/admin/AdminDemandes';
+import { AdminEmails } from './pages/admin/AdminEmails';
 
 /** Réservé aux personnes connectées ET dont le compte a un profil. */
 function AccesProtege({ children }: { children: ReactNode }) {
@@ -89,6 +92,7 @@ function Application() {
             <Route path="interventions/:id" element={<FicheIntervention />} />
             <Route path="planning" element={<Planning />} />
             <Route path="compte" element={<MonCompte />} />
+            <Route path="demandes" element={<Demandes />} />
             <Route path="admin" element={<AccesAdmin><AdminAccueil /></AccesAdmin>} />
             <Route path="admin/clients" element={<AccesAdmin><AdminClients /></AccesAdmin>} />
             <Route path="admin/clients/:id" element={<AccesAdmin><AdminClient /></AccesAdmin>} />
@@ -97,6 +101,8 @@ function Application() {
             <Route path="admin/sites/:id" element={<AccesAdmin><AdminSite /></AccesAdmin>} />
             <Route path="admin/interventions" element={<AccesAdmin><AdminInterventions /></AccesAdmin>} />
             <Route path="admin/interventions/:id" element={<AccesAdmin><AdminIntervention /></AccesAdmin>} />
+            <Route path="admin/demandes" element={<AccesAdmin><AdminDemandes /></AccesAdmin>} />
+            <Route path="admin/emails" element={<AccesAdmin><AdminEmails /></AccesAdmin>} />
             <Route path="*" element={<PageIntrouvable />} />
           </Route>
           <Route path="/mentions-legales" element={<MentionsLegales />} />

@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { chargerInterventionsPubliees, chargerPassagesAVenir, chargerSites } from '../lib/requetes';
 import { useChargement } from '../lib/useChargement';
+import { useConnexion } from '../lib/auth';
 import { BadgeStatut, Etat, dateIntervention, libelleIntervention } from '../composants/Communs';
 import type { Intervention, Site } from '../lib/types';
 
@@ -18,6 +19,7 @@ async function chargerPlanning() {
 }
 
 export function Planning() {
+  const { profil } = useConnexion();
   const etat = useChargement(chargerPlanning, []);
   return (
     <>
@@ -37,7 +39,13 @@ export function Planning() {
             ) : (
               <div className="grille grille-2" style={{ alignItems: 'start' }}>
                 {[...parSite.entries()].map(([siteId, passages]) => (
-                  <BlocSite key={siteId} site={sitesParId.get(siteId)} siteId={siteId} passages={passages} />
+                  <BlocSite
+                    key={siteId}
+                    site={sitesParId.get(siteId)}
+                    siteId={siteId}
+                    passages={passages}
+                    demandePossible={profil?.role === 'client'}
+                  />
                 ))}
               </div>
             )}
@@ -76,8 +84,8 @@ export function Planning() {
             )}
 
             <p className="secondaire">
-              Un passage « Proposé » attend votre accord ; « Confirmé » signifie que la date est arrêtée. Pour demander
-              un changement de date, contactez votre interlocuteur ACG NET SPE.
+              Un passage « Proposé » attend votre accord ; « Confirmé » signifie que la date est arrêtée. Une date ne
+              vous convient pas ? Utilisez « Changer la date » : votre demande nous parvient directement.
             </p>
           </div>
         )}
@@ -86,7 +94,17 @@ export function Planning() {
   );
 }
 
-function BlocSite({ site, siteId, passages }: { site?: Site; siteId: string; passages: Intervention[] }) {
+function BlocSite({
+  site,
+  siteId,
+  passages,
+  demandePossible,
+}: {
+  site?: Site;
+  siteId: string;
+  passages: Intervention[];
+  demandePossible: boolean;
+}) {
   return (
     <section className="carte">
       <h2>
@@ -99,7 +117,14 @@ function BlocSite({ site, siteId, passages }: { site?: Site; siteId: string; pas
               <Link to={`/interventions/${i.id}`}>{libelleIntervention(i)}</Link>
               <div className="secondaire">{dateIntervention(i)}</div>
             </div>
-            <BadgeStatut statut={i.statut} />
+            <div style={{ display: 'grid', gap: '0.4rem', justifyItems: 'end' }}>
+              <BadgeStatut statut={i.statut} />
+              {demandePossible && (
+                <Link to={`/demandes?intervention=${i.id}`} className="secondaire">
+                  Changer la date
+                </Link>
+              )}
+            </div>
           </li>
         ))}
       </ul>

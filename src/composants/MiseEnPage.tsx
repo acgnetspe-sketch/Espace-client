@@ -33,6 +33,7 @@ export function MiseEnPage() {
               <NavLink to="/admin/clients">Clients</NavLink>
               <NavLink to="/admin/sites">Sites</NavLink>
               <NavLink to="/admin/interventions">Interventions</NavLink>
+              <NavLink to="/admin/demandes">Demandes</NavLink>
               <NavLink to="/vue-client">Vue client</NavLink>
             </>
           ) : (
@@ -42,6 +43,7 @@ export function MiseEnPage() {
               </NavLink>
               <NavLink to="/sites">Mes sites</NavLink>
               <NavLink to="/planning">Planning</NavLink>
+              <NavLink to="/demandes">Demandes</NavLink>
               <NavLink to="/compte">Mon compte</NavLink>
             </>
           )}

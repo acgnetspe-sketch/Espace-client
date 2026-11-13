@@ -50,6 +50,8 @@ export function MonCompte() {
                 )}
                 <dt>Organisation</dt>
                 <dd>{organisation?.nom ?? (profil.role === 'admin' ? 'ACG NET SPE (administrateur)' : '–')}</dd>
+                <dt>E-mails automatiques</dt>
+                <dd>{profil.recoit_emails ? 'Oui (rapports publiés, rappels de passage, réponses)' : 'Non'}</dd>
                 {profil.role === 'client' && (
                   <>
                     <dt>Sites accessibles</dt>

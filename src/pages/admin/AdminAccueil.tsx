@@ -1,6 +1,13 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
-import { listerInterventionsAdmin, listerOrganisations, listerSitesAdmin, marquerAnomalieTraitee } from '../../lib/admin';
+import {
+  listerDemandesAdmin,
+  listerInterventionsAdmin,
+  listerOrganisations,
+  listerSitesAdmin,
+  marquerAnomalieTraitee,
+} from '../../lib/admin';
+import { LIBELLE_DEMANDE } from '../../lib/libelles';
 import { chargerAlertes } from '../../lib/requetes';
 import { useChargement } from '../../lib/useChargement';
 import { aujourdhuiParis, formaterDate, formaterPeriode, pluriel } from '../../lib/formats';
@@ -11,11 +18,12 @@ import type { InterventionAdmin } from '../../lib/admin';
 import type { Site } from '../../lib/types';
 
 async function chargerAccueil() {
-  const [interventions, sites, organisations, alertes] = await Promise.all([
+  const [interventions, sites, organisations, alertes, demandes] = await Promise.all([
     listerInterventionsAdmin(),
     listerSitesAdmin(),
     listerOrganisations(),
     chargerAlertes(),
+    listerDemandesAdmin(),
   ]);
   const jour = aujourdhuiParis();
   const fin = (i: InterventionAdmin) => i.fin_prevue ?? i.debut_prevu ?? '';
@@ -32,6 +40,7 @@ async function chargerAccueil() {
     anomalies: alertes.filter((a) => a.type_alerte === 'anomalie'),
     echeancesOld: alertes.filter((a) => a.type_alerte === 'old'),
     nombres: { organisations: organisations.length, sites: sites.length },
+    demandesNouvelles: demandes.filter((d) => d.statut === 'envoyee'),
   };
 }
 
@@ -81,12 +90,12 @@ export function AdminAccueil() {
                   <div className="chiffre-valeur">{d.anomalies.length}</div>
                   <div className="chiffre-libelle">{d.anomalies.length > 1 ? 'anomalies ouvertes' : 'anomalie ouverte'}</div>
                 </div>
-                <div className="carte chiffre">
-                  <div className="chiffre-valeur">{d.nombres.sites}</div>
+                <Link to="/admin/demandes" className="carte chiffre carte-lien">
+                  <div className="chiffre-valeur">{d.demandesNouvelles.length}</div>
                   <div className="chiffre-libelle">
-                    sites chez {pluriel(d.nombres.organisations, 'client')}
+                    {d.demandesNouvelles.length > 1 ? 'nouvelles demandes' : 'nouvelle demande'} de clients
                   </div>
-                </div>
+                </Link>
               </div>
 
               <div className="grille grille-2" style={{ alignItems: 'start' }}>
@@ -137,6 +146,25 @@ export function AdminAccueil() {
                   )}
                 </section>
 
+                {d.demandesNouvelles.length > 0 && (
+                  <section className="carte" aria-labelledby="titre-demandes">
+                    <div className="carte-titre">
+                      <h2 id="titre-demandes">Nouvelles demandes</h2>
+                      <Link to="/admin/demandes">Répondre</Link>
+                    </div>
+                    <ul className="liste">
+                      {d.demandesNouvelles.slice(0, 5).map((dem) => (
+                        <li key={dem.id}>
+                          <strong>{LIBELLE_DEMANDE[dem.type]}</strong> – {d.organisations.get(dem.organisation_id)}
+                          <div className="secondaire" style={{ overflowWrap: 'anywhere' }}>
+                            {dem.message.length > 120 ? `${dem.message.slice(0, 120)}…` : dem.message}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+
                 <section className="carte" aria-labelledby="titre-a-venir">
                   <div className="carte-titre">
                     <h2 id="titre-a-venir">Passages à venir</h2>
@@ -157,6 +185,10 @@ export function AdminAccueil() {
                       <ul className="liste">{d.enRetard.map((i) => ligne(i, <BadgeStatut statut={i.statut} />))}</ul>
                     </section>
                   )}
+                  <p className="secondaire">
+                    {d.nombres.sites} sites chez {pluriel(d.nombres.organisations, 'client')} ·{' '}
+                    <Link to="/admin/emails">Journal des e-mails automatiques</Link>
+                  </p>
                   <section className="carte" aria-labelledby="titre-old">
                     <h2 id="titre-old">Échéances OLD à moins de 60 jours</h2>
                     {d.echeancesOld.length === 0 ? (

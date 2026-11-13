@@ -63,7 +63,7 @@ export function FournisseurConnexion({ children }: { children: ReactNode }) {
     setProfilLu(false);
     supabase
       .from('profils')
-      .select('id, organisation_id, nom, fonction, telephone, email, role')
+      .select('id, organisation_id, nom, fonction, telephone, email, role, recoit_emails')
       .eq('id', idUtilisateur)
       .maybeSingle()
       .then(({ data }) => {

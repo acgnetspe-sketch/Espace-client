@@ -4,6 +4,8 @@ import { useChargement } from '../lib/useChargement';
 import { formaterHa, formaterHorodatage, formaterM2, formaterPeriode } from '../lib/formats';
 import { LIBELLE_FICHIER } from '../lib/libelles';
 import { BadgeStatut, BoutonFichier, Etat, PageIntrouvable, libelleIntervention } from '../composants/Communs';
+import { GaleriePhotos } from '../composants/GaleriePhotos';
+import { useConnexion } from '../lib/auth';
 import type { Fichier, Intervention, Site } from '../lib/types';
 
 async function chargerFiche(id: string) {
@@ -33,7 +35,10 @@ export function FicheIntervention() {
 }
 
 function Contenu({ intervention: i, site, fichiers }: { intervention: Intervention; site: Site; fichiers: Fichier[] }) {
+  const { profil } = useConnexion();
   const rapports = fichiers.filter((f) => f.type === 'rapport' || f.type === 'document');
+  const photos = fichiers.filter((f) => f.type === 'photo_avant' || f.type === 'photo_apres');
+  const planifie = i.statut === 'proposee' || i.statut === 'confirmee';
 
   return (
     <>
@@ -47,7 +52,14 @@ function Contenu({ intervention: i, site, fichiers }: { intervention: Interventi
             <Link to={`/sites/${site.id}`}>{site.nom}</Link>
           </p>
         </div>
-        <BadgeStatut statut={i.statut} />
+        <div className="actions" style={{ marginTop: 0 }}>
+          <BadgeStatut statut={i.statut} />
+          {planifie && profil?.role === 'client' && (
+            <Link to={`/demandes?intervention=${i.id}`} className="bouton bouton-secondaire bouton-petit">
+              Demander un changement de date
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="grille grille-2" style={{ alignItems: 'start' }}>
@@ -131,6 +143,13 @@ function Contenu({ intervention: i, site, fichiers }: { intervention: Interventi
           )}
         </div>
       </div>
+
+      {i.publiee && photos.length > 0 && (
+        <section className="carte" aria-labelledby="titre-photos" style={{ marginTop: '1rem' }}>
+          <h2 id="titre-photos">Photos</h2>
+          <GaleriePhotos photos={photos} />
+        </section>
+      )}
     </>
   );
 }

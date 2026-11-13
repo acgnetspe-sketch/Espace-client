@@ -163,6 +163,7 @@ export function CarteContact({
     nom: contact.nom,
     fonction: contact.fonction ?? '',
     telephone: contact.telephone ?? '',
+    recoit_emails: contact.recoit_emails,
   });
   const [acces, setAcces] = useState(accesActuels);
   const prefixe = `contact-${contact.id}`;
@@ -174,6 +175,7 @@ export function CarteContact({
         nom: champs.nom.trim(),
         fonction: nulSiVide(champs.fonction),
         telephone: nulSiVide(champs.telephone),
+        recoit_emails: champs.recoit_emails,
       });
       await definirAccesSites(contact.id, acces);
     }, 'Contact enregistré.');
@@ -193,6 +195,7 @@ export function CarteContact({
           <div className="secondaire">{[contact.fonction, contact.email, contact.telephone].filter(Boolean).join(' · ')}</div>
           <div className="secondaire">
             Accès : {nomsAcces.length === 0 ? 'tous les sites' : `limité à ${nomsAcces.join(', ')}`}
+            {!contact.recoit_emails && ' · ne reçoit pas les e-mails automatiques'}
           </div>
           <LigneEtatCompte etat={etat} />
         </div>
@@ -228,8 +231,21 @@ export function CarteContact({
               />
             </Champ>
             <div className="pleine-largeur">
-              <ChoixSites id={prefixe} sites={sites} choisis={acces} surChangement={setAcces} />
+              <label className="case" htmlFor={`${prefixe}-emails`}>
+                <input
+                  id={`${prefixe}-emails`}
+                  type="checkbox"
+                  checked={champs.recoit_emails}
+                  onChange={(e) => setChamps({ ...champs, recoit_emails: e.target.checked })}
+                />
+                Reçoit les e-mails automatiques (rapports publiés, rappels, réponses)
+              </label>
             </div>
+            {contact.role === 'client' && (
+              <div className="pleine-largeur">
+                <ChoixSites id={prefixe} sites={sites} choisis={acces} surChangement={setAcces} />
+              </div>
+            )}
           </div>
           <p className="aide">L’adresse e-mail ne se modifie pas : pour changer d’adresse, supprimer le contact et l’inviter à nouveau.</p>
           <div className="actions">

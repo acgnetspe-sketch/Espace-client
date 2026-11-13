@@ -5,6 +5,8 @@ import { supabase } from './supabase';
 import { aujourdhuiParis } from './formats';
 import type {
   Alerte,
+  Demande,
+  TypeDemande,
   ChiffresAnnee,
   Fichier,
   Intervention,
@@ -109,7 +111,7 @@ export async function chargerMembresOrganisation(organisationId: string): Promis
   return verifier(
     await supabase
       .from('profils')
-      .select('id, organisation_id, nom, fonction, telephone, email, role')
+      .select('id, organisation_id, nom, fonction, telephone, email, role, recoit_emails')
       .eq('organisation_id', organisationId)
       .order('nom'),
   );
@@ -119,4 +121,30 @@ export async function chargerMembresOrganisation(organisationId: string): Promis
 export async function chargerMesLimitations(profilId: string): Promise<string[]> {
   const lignes = verifier(await supabase.from('acces_sites').select('site_id').eq('profil_id', profilId));
   return (lignes as { site_id: string }[]).map((l) => l.site_id);
+}
+
+// ---------------------------------------------------------------------------
+// Demandes (V2)
+// ---------------------------------------------------------------------------
+const COLONNES_DEMANDE =
+  'id, organisation_id, site_id, intervention_id, auteur_id, type, message, date_souhaitee, statut, reponse, creee_le, modifie_le';
+
+export async function chargerDemandes(): Promise<Demande[]> {
+  return verifier(await supabase.from('demandes').select(COLONNES_DEMANDE).order('creee_le', { ascending: false }));
+}
+
+export async function envoyerDemande(demande: {
+  organisation_id: string;
+  auteur_id: string;
+  type: TypeDemande;
+  message: string;
+  site_id: string | null;
+  intervention_id: string | null;
+  date_souhaitee: string | null;
+}): Promise<void> {
+  const { error } = await supabase.from('demandes').insert(demande);
+  if (error) {
+    console.error(error);
+    throw new ErreurChargement('La demande n’a pas pu être envoyée. Vérifiez votre connexion puis réessayez.');
+  }
 }
