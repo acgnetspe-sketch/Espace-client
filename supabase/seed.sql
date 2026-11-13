@@ -179,3 +179,23 @@ insert into public.fichiers (id, intervention_id, type, chemin, nom, taille_octe
    'b0000000-0000-4000-8000-000000000001/b2000000-0000-4000-8000-000000000001/b3000000-0000-4000-8000-000000000001/rapport-demo-atelier-b.pdf',
    'Rapport de nettoyage – Toiture Démo Atelier B.pdf', null)
 on conflict (id) do nothing;
+
+-- ---------------------------------------------------------------------------
+-- Photos avant/après factices (V2). Les fichiers sont dans public/demo/ :
+-- sur le site de démonstration, le bouton « Installer les fichiers de
+-- démonstration » (tableau de bord interne) les dépose à ces chemins.
+-- ---------------------------------------------------------------------------
+insert into public.fichiers (id, intervention_id, type, chemin, nom, taille_octets) values
+  ('a4000000-0000-4000-8000-000000000011', 'a3000000-0000-4000-8000-000000000001', 'photo_avant',
+   'a0000000-0000-4000-8000-000000000001/a2000000-0000-4000-8000-000000000001/a3000000-0000-4000-8000-000000000001/garrigues-avant.jpg',
+   'garrigues-avant.jpg', null),
+  ('a4000000-0000-4000-8000-000000000012', 'a3000000-0000-4000-8000-000000000001', 'photo_apres',
+   'a0000000-0000-4000-8000-000000000001/a2000000-0000-4000-8000-000000000001/a3000000-0000-4000-8000-000000000001/garrigues-apres.jpg',
+   'garrigues-apres.jpg', null),
+  ('a4000000-0000-4000-8000-000000000013', 'a3000000-0000-4000-8000-000000000002', 'photo_avant',
+   'a0000000-0000-4000-8000-000000000001/a2000000-0000-4000-8000-000000000002/a3000000-0000-4000-8000-000000000002/mistral-avant.jpg',
+   'mistral-avant.jpg', null),
+  ('a4000000-0000-4000-8000-000000000014', 'a3000000-0000-4000-8000-000000000002', 'photo_apres',
+   'a0000000-0000-4000-8000-000000000001/a2000000-0000-4000-8000-000000000002/a3000000-0000-4000-8000-000000000002/mistral-apres.jpg',
+   'mistral-apres.jpg', null)
+on conflict (id) do nothing;
