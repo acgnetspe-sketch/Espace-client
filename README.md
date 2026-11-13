@@ -4,10 +4,11 @@ Espace sécurisé où chaque exploitant client d'ACG NET SPE (nettoyage et débr
 
 - Cahier des charges : [CAHIER_DES_CHARGES.md](CAHIER_DES_CHARGES.md)
 - Mise en place de la base de données : [docs/GUIDE_SUPABASE.md](docs/GUIDE_SUPABASE.md)
+- Mise en ligne d'essai et vérification des écrans client : [docs/GUIDE_ETAPE_2.md](docs/GUIDE_ETAPE_2.md)
 
 ## Technique
 
-- Interface : Vite, React et TypeScript (à partir de l'étape 2)
+- Interface : Vite, React 19, React Router et TypeScript ; police Inter hébergée avec le site (aucun appel à Google)
 - Base de données, connexion par lien magique, fichiers privés : Supabase, région Paris (eu-west-3)
 - Hébergement de l'interface : Netlify
 
@@ -16,7 +17,7 @@ Espace sécurisé où chaque exploitant client d'ACG NET SPE (nettoyage et débr
 | Étape | Contenu | État |
 |---|---|---|
 | 1 | Tables, règles de sécurité, données de démonstration, tests d'isolement | Fait |
-| 2 | Connexion et écrans client en lecture | À faire |
+| 2 | Connexion par lien magique et écrans client en lecture | Fait |
 | 3 | Écrans administrateur | À faire |
 | 4 | Photos, demandes, e-mails automatiques (V2) | À faire |
 | 5 | Mise en ligne sur Netlify | À faire |
@@ -24,6 +25,10 @@ Espace sécurisé où chaque exploitant client d'ACG NET SPE (nettoyage et débr
 ## Organisation du dépôt
 
 ```
+src/
+  lib/             Connexion à Supabase, requêtes, formats français, libellés
+  composants/      Éléments communs (en-tête, badges, boutons de fichiers)
+  pages/           Un fichier par écran
 supabase/
   migrations/      Schéma et sécurité, à appliquer dans l'ordre (1 à 4)
   seed.sql         Données de démonstration fictives
@@ -44,8 +49,21 @@ docs/              Guides
 - Aucune clé secrète dans le dépôt : `.env` est ignoré par Git, et `.env.example` ne contient pas de valeurs.
 - Le dépôt ne contient que des données fictives.
 
+## Lancer l'application sur un ordinateur
+
+Il faut Node.js 22.
+
+```
+npm install
+cp .env.example .env      # puis remplir les deux valeurs
+npm run dev               # ouvre http://127.0.0.1:5173
+```
+
+Pour que le lien magique fonctionne en local, ajouter `http://127.0.0.1:5173/**` dans Supabase, menu Authentication › URL Configuration › Redirect URLs.
+
 ## Tests
 
 - **Dans Supabase** : coller `supabase/tests/isolement.test.sql` dans l'éditeur SQL. Chaque ligne du tableau doit afficher « OK ».
 - **En local** (PostgreSQL 15 ou plus récent) : `bash supabase/tests/local/lancer_tests.sh`
-- **Automatiquement** : à chaque envoi sur GitHub, l'onglet *Actions* relance ces tests (« Tests de sécurité »).
+- **Formats** (dates, surfaces) : `npm test`
+- **Automatiquement** : à chaque envoi sur GitHub, l'onglet *Actions* relance les tests d'isolement, les tests de formats et la construction de l'application (« Tests de sécurité »).

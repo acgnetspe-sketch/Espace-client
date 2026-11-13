@@ -1,5 +1,5 @@
-# Relance automatiquement les tests d'isolement à chaque envoi de code sur GitHub.
-# Si une modification casse la sécurité, la coche devient rouge.
+# Vérifications automatiques à chaque envoi de code sur GitHub.
+# Si une modification casse la sécurité ou l'application, la coche devient rouge.
 name: Tests de sécurité
 
 on:
@@ -17,3 +17,18 @@ jobs:
       - uses: actions/checkout@v4
       - name: Lancer les tests sur un PostgreSQL jetable
         run: bash supabase/tests/local/lancer_tests.sh
+
+  application:
+    name: Application (formats et construction)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Tests des formats (dates, surfaces)
+        run: npm test
+      - name: Construction de l'application
+        run: npm run build
