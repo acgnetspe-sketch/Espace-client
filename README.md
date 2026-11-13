@@ -5,6 +5,7 @@ Espace sécurisé où chaque exploitant client d'ACG NET SPE (nettoyage et débr
 - Cahier des charges : [CAHIER_DES_CHARGES.md](CAHIER_DES_CHARGES.md)
 - Mise en place de la base de données : [docs/GUIDE_SUPABASE.md](docs/GUIDE_SUPABASE.md)
 - Mise en ligne d'essai et vérification des écrans client : [docs/GUIDE_ETAPE_2.md](docs/GUIDE_ETAPE_2.md)
+- Administration (fonction d'invitation, essais) : [docs/GUIDE_ETAPE_3.md](docs/GUIDE_ETAPE_3.md)
 
 ## Technique
 
@@ -18,7 +19,7 @@ Espace sécurisé où chaque exploitant client d'ACG NET SPE (nettoyage et débr
 |---|---|---|
 | 1 | Tables, règles de sécurité, données de démonstration, tests d'isolement | Fait |
 | 2 | Connexion par lien magique et écrans client en lecture | Fait |
-| 3 | Écrans administrateur | À faire |
+| 3 | Écrans administrateur : clients et invitations, sites et import CSV, interventions, rapports PDF, publication | Fait |
 | 4 | Photos, demandes, e-mails automatiques (V2) | À faire |
 | 5 | Mise en ligne sur Netlify | À faire |
 
@@ -28,9 +29,10 @@ Espace sécurisé où chaque exploitant client d'ACG NET SPE (nettoyage et débr
 src/
   lib/             Connexion à Supabase, requêtes, formats français, libellés
   composants/      Éléments communs (en-tête, badges, boutons de fichiers)
-  pages/           Un fichier par écran
+  pages/           Un fichier par écran (pages/admin : administration ACG)
 supabase/
-  migrations/      Schéma et sécurité, à appliquer dans l'ordre (1 à 4)
+  migrations/      Schéma et sécurité, à appliquer dans l'ordre (1 à 5)
+  functions/       Edge Function « admin-contacts » (invitations, suppression de comptes)
   seed.sql         Données de démonstration fictives
   tests/
     isolement.test.sql   Tests d'isolement entre clients (éditeur SQL de Supabase)
@@ -46,6 +48,7 @@ docs/              Guides
 - Les interventions sont lues par les clients à travers la vue `interventions_visibles`. Un passage planifié est visible, mais le compte rendu, le rapport et les photos n'apparaissent qu'après « Publier ».
 - Les notes internes sont dans des tables réservées aux administrateurs.
 - Les fichiers sont dans un stockage privé et se téléchargent par lien signé valable 1 heure. Un fichier n'est lisible que s'il est référencé dans la table `fichiers` et visible par la personne.
+- Les comptes de connexion sont créés et supprimés par l'Edge Function `admin-contacts`, qui garde la clé secrète côté serveur et vérifie à chaque appel que l'appelant est administrateur.
 - Aucune clé secrète dans le dépôt : `.env` est ignoré par Git, et `.env.example` ne contient pas de valeurs.
 - Le dépôt ne contient que des données fictives.
 
@@ -65,5 +68,5 @@ Pour que le lien magique fonctionne en local, ajouter `http://127.0.0.1:5173/**`
 
 - **Dans Supabase** : coller `supabase/tests/isolement.test.sql` dans l'éditeur SQL. Chaque ligne du tableau doit afficher « OK ».
 - **En local** (PostgreSQL 15 ou plus récent) : `bash supabase/tests/local/lancer_tests.sh`
-- **Formats** (dates, surfaces) : `npm test`
+- **Formats et import CSV** : `npm test`
 - **Automatiquement** : à chaque envoi sur GitHub, l'onglet *Actions* relance les tests d'isolement, les tests de formats et la construction de l'application (« Tests de sécurité »).

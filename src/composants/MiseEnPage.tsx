@@ -1,18 +1,21 @@
-import { NavLink, Link, Outlet } from 'react-router';
+import { NavLink, Link, Outlet, useLocation } from 'react-router';
 import { useConnexion } from '../lib/auth';
 import { Logo } from './Communs';
 
 /** Cadre commun à tous les écrans connectés : en-tête, navigation, pied de page. */
 export function MiseEnPage() {
   const { profil, session, deconnexion } = useConnexion();
+  const emplacement = useLocation();
+  const estAdmin = profil?.role === 'admin';
+  const dansAdministration = emplacement.pathname.startsWith('/admin');
 
   return (
     <>
-      <header className="entete">
+      <header className={`entete${estAdmin ? ' entete-admin' : ''}`}>
         <div className="entete-haut">
           <div>
-            <Logo />
-            <span className="entete-sous-titre">Espace client</span>
+            <Logo vers={estAdmin ? '/admin' : '/'} />
+            <span className="entete-sous-titre">{estAdmin ? 'Administration' : 'Espace client'}</span>
           </div>
           <div className="entete-utilisateur">
             <span>{profil?.nom ?? session?.user.email}</span>
@@ -22,22 +25,35 @@ export function MiseEnPage() {
           </div>
         </div>
         <nav className="navigation" aria-label="Navigation principale">
-          <NavLink to="/" end>
-            Tableau de bord
-          </NavLink>
-          <NavLink to="/sites">Mes sites</NavLink>
-          <NavLink to="/planning">Planning</NavLink>
-          <NavLink to="/compte">Mon compte</NavLink>
+          {estAdmin ? (
+            <>
+              <NavLink to="/admin" end>
+                Tableau de bord
+              </NavLink>
+              <NavLink to="/admin/clients">Clients</NavLink>
+              <NavLink to="/admin/sites">Sites</NavLink>
+              <NavLink to="/admin/interventions">Interventions</NavLink>
+              <NavLink to="/vue-client">Vue client</NavLink>
+            </>
+          ) : (
+            <>
+              <NavLink to="/" end>
+                Tableau de bord
+              </NavLink>
+              <NavLink to="/sites">Mes sites</NavLink>
+              <NavLink to="/planning">Planning</NavLink>
+              <NavLink to="/compte">Mon compte</NavLink>
+            </>
+          )}
         </nav>
       </header>
 
       <main className="contenu" id="contenu">
-        {profil?.role === 'admin' && (
+        {estAdmin && !dansAdministration && (
           <div className="alerte alerte-info" style={{ marginBottom: '1.25rem' }}>
             <p>
-              <strong>Vous êtes connecté en tant qu’administrateur ACG NET SPE.</strong> Vous voyez ces écrans tels qu’un
-              client les voit, mais avec les données de tous les clients. Les écrans d’administration arrivent à l’étape
-              suivante.
+              <strong>Vue client.</strong> Ces écrans sont ceux des clients, mais vous y voyez les données de tous les
+              clients. <Link to="/admin">Revenir à l’administration</Link>
             </p>
           </div>
         )}

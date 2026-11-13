@@ -28,7 +28,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Tests des formats (dates, surfaces)
+      - name: Tests des formats et de l'import CSV
         run: npm test
       - name: Construction de l'application
         run: npm run build

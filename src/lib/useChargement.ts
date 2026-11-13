@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type DependencyList } from 'react';
+import { useCallback, useEffect, useRef, useState, type DependencyList } from 'react';
 
 export interface EtatChargement<T> {
   donnees: T | null;
@@ -14,11 +14,17 @@ export function useChargement<T>(charger: () => Promise<T>, dependances: Depende
   const [chargement, setChargement] = useState(true);
   const [essai, setEssai] = useState(0);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const chargerMemo = useCallback(charger, dependances);
 
+  // Changement d'écran (autre identifiant) : on efface les anciennes données.
+  // Simple rechargement : on les garde affichées pendant la mise à jour.
+  const dernierChargeur = useRef(chargerMemo);
   useEffect(() => {
     let annule = false;
+    if (dernierChargeur.current !== chargerMemo) {
+      dernierChargeur.current = chargerMemo;
+      setDonnees(null);
+    }
     setChargement(true);
     setErreur(null);
     chargerMemo()

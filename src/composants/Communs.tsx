@@ -49,7 +49,8 @@ export function Etat<T>({
   children: (donnees: T) => ReactNode;
 }) {
   if (etat.erreur) return <MessageErreur message={etat.erreur} recharger={etat.recharger} />;
-  if (etat.chargement || etat.donnees === null) return <Chargement />;
+  // Pendant un rechargement, on garde l'affichage (et les saisies en cours) à l'écran.
+  if (etat.donnees === null) return <Chargement />;
   return <>{children(etat.donnees)}</>;
 }
 

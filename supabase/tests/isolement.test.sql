@@ -4,7 +4,7 @@
 -- Comment l'utiliser : coller TOUT ce fichier dans l'éditeur SQL de Supabase
 -- (SQL Editor › New query), puis cliquer sur « Run ».
 --
--- Prérequis : les 4 migrations ET les données de démonstration (seed.sql)
+-- Prérequis : toutes les migrations ET les données de démonstration (seed.sql)
 -- ont été appliquées.
 --
 -- Ce que fait le script : il se fait passer successivement pour le client A,
@@ -303,6 +303,12 @@ begin
     n := pg_temp.ecrire(ca, 'update public.demandes set statut = ''traitee'', reponse = ''x''');
     r := r || row('Un client ne peut pas modifier le statut d''une demande', n <= 0, 'lignes : ' || n)::pg_temp.ligne_test;
 
+    -- État des comptes (migration 5) : réservé aux administrateurs.
+    n := pg_temp.compter(ca, 'select 1 from public.etat_comptes()');
+    r := r || row('Un client ne voit pas l''état des comptes (invitations, connexions)', n <= 0, 'vus : ' || n)::pg_temp.ligne_test;
+    n := pg_temp.compter(adm, 'select 1 from public.etat_comptes()');
+    r := r || row('Administrateur : voit l''état des 4 comptes de démonstration', n = 4, 'vus : ' || n)::pg_temp.ligne_test;
+
     -- -----------------------------------------------------------------------
     -- 7. Visiteur non connecté : rien du tout
     -- -----------------------------------------------------------------------
@@ -314,6 +320,8 @@ begin
     r := r || row('Visiteur non connecté : aucun contact', n <= 0, 'vus : ' || n)::pg_temp.ligne_test;
     n := pg_temp.compter(null, 'select 1 from public.fichiers');
     r := r || row('Visiteur non connecté : aucun fichier', n <= 0, 'vus : ' || n)::pg_temp.ligne_test;
+    n := pg_temp.compter(null, 'select 1 from public.etat_comptes()');
+    r := r || row('Visiteur non connecté : aucun état de compte', n <= 0, 'vus : ' || n)::pg_temp.ligne_test;
     n := pg_temp.compter(null, 'select 1 from storage.objects where bucket_id = ''documents''');
     r := r || row('Visiteur non connecté : aucun fichier du stockage', n <= 0, 'vus : ' || n)::pg_temp.ligne_test;
 

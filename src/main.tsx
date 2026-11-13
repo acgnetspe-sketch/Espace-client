@@ -17,6 +17,14 @@ import { Planning } from './pages/Planning';
 import { MonCompte } from './pages/MonCompte';
 import { MentionsLegales } from './pages/MentionsLegales';
 import { CompteNonActive } from './pages/CompteNonActive';
+import { AdminAccueil } from './pages/admin/AdminAccueil';
+import { AdminClients } from './pages/admin/AdminClients';
+import { AdminClient } from './pages/admin/AdminClient';
+import { AdminSites } from './pages/admin/AdminSites';
+import { AdminSite } from './pages/admin/AdminSite';
+import { AdminImportSites } from './pages/admin/AdminImportSites';
+import { AdminInterventions } from './pages/admin/AdminInterventions';
+import { AdminIntervention } from './pages/admin/AdminIntervention';
 
 /** Réservé aux personnes connectées ET dont le compte a un profil. */
 function AccesProtege({ children }: { children: ReactNode }) {
@@ -26,6 +34,23 @@ function AccesProtege({ children }: { children: ReactNode }) {
   if (!session) return <Navigate to="/connexion" replace state={{ depuis: emplacement.pathname }} />;
   if (!profil) return <CompteNonActive />;
   return <>{children}</>;
+}
+
+/**
+ * Écrans réservés aux administrateurs. La vraie protection est dans la base
+ * (règles RLS) : un client qui forcerait l'accès ne verrait ni ne modifierait rien.
+ */
+function AccesAdmin({ children }: { children: ReactNode }) {
+  const { profil } = useConnexion();
+  if (profil?.role !== 'admin') return <PageIntrouvable />;
+  return <>{children}</>;
+}
+
+/** Accueil : tableau de bord client, ou administration pour l'équipe ACG. */
+function Accueil() {
+  const { profil } = useConnexion();
+  if (profil?.role === 'admin') return <Navigate to="/admin" replace />;
+  return <TableauDeBord />;
 }
 
 function ConfigurationManquante() {
@@ -57,12 +82,21 @@ function Application() {
               </AccesProtege>
             }
           >
-            <Route index element={<TableauDeBord />} />
+            <Route index element={<Accueil />} />
+            <Route path="vue-client" element={<TableauDeBord />} />
             <Route path="sites" element={<Sites />} />
             <Route path="sites/:id" element={<FicheSite />} />
             <Route path="interventions/:id" element={<FicheIntervention />} />
             <Route path="planning" element={<Planning />} />
             <Route path="compte" element={<MonCompte />} />
+            <Route path="admin" element={<AccesAdmin><AdminAccueil /></AccesAdmin>} />
+            <Route path="admin/clients" element={<AccesAdmin><AdminClients /></AccesAdmin>} />
+            <Route path="admin/clients/:id" element={<AccesAdmin><AdminClient /></AccesAdmin>} />
+            <Route path="admin/sites" element={<AccesAdmin><AdminSites /></AccesAdmin>} />
+            <Route path="admin/sites/import" element={<AccesAdmin><AdminImportSites /></AccesAdmin>} />
+            <Route path="admin/sites/:id" element={<AccesAdmin><AdminSite /></AccesAdmin>} />
+            <Route path="admin/interventions" element={<AccesAdmin><AdminInterventions /></AccesAdmin>} />
+            <Route path="admin/interventions/:id" element={<AccesAdmin><AdminIntervention /></AccesAdmin>} />
             <Route path="*" element={<PageIntrouvable />} />
           </Route>
           <Route path="/mentions-legales" element={<MentionsLegales />} />
