@@ -1,0 +1,19 @@
+# Relance automatiquement les tests d'isolement à chaque envoi de code sur GitHub.
+# Si une modification casse la sécurité, la coche devient rouge.
+name: Tests de sécurité
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  isolement:
+    name: Isolement entre clients
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lancer les tests sur un PostgreSQL jetable
+        run: bash supabase/tests/local/lancer_tests.sh
