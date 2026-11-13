@@ -157,7 +157,7 @@ begin
     r := r || row('Client B : voit son 1 site', n = 1, 'vus : ' || n)::pg_temp.ligne_test;
     n := pg_temp.compter(ca, 'select 1 from public.interventions_visibles');
     r := r || row('Client A : voit ses 13 interventions (10 publiées, 3 planifiées)', n = 13, 'vues : ' || n)::pg_temp.ligne_test;
-    n := pg_temp.compter(ca, 'select 1 from public.fichiers');
+    n := pg_temp.compter(ca, 'select 1 from public.fichiers where type = ''rapport''');
     r := r || row('Client A : voit ses 2 rapports publiés', n = 2, 'vus : ' || n)::pg_temp.ligne_test;
     n := pg_temp.compter(ca, 'select 1 from public.interventions_visibles where id = ' || int_a_publiee || ' and surface_m2 is not null and bon_commande is not null');
     r := r || row('Client A : voit le compte rendu d''une intervention publiée', n = 1, 'vu : ' || n)::pg_temp.ligne_test;
@@ -172,7 +172,7 @@ begin
     n := pg_temp.compter(ca, 'select 1 from public.profils');
     r := r || row('Client A : voit les 2 utilisateurs de son organisation', n = 2, 'vus : ' || n)::pg_temp.ligne_test;
     if stockage_teste then
-      n := pg_temp.compter(ca, 'select 1 from storage.objects where bucket_id = ''documents''');
+      n := pg_temp.compter(ca, 'select 1 from storage.objects where bucket_id = ''documents'' and name in (' || quote_literal(chem_a1) || ',' || quote_literal(chem_a2) || ')');
       r := r || row('Client A : peut télécharger ses 2 rapports (stockage)', n = 2, 'vus : ' || n)::pg_temp.ligne_test;
     end if;
 

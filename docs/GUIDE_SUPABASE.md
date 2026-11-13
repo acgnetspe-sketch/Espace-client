@@ -98,6 +98,8 @@ Les lignes « stockage » (téléchargement des PDF) sont testées avec des fich
 
 ## Étape 6 — Déposer les 3 rapports PDF factices (peut attendre l'étape 2)
 
+> **Depuis l'étape 5**, le site de démonstration a un bouton « Installer les fichiers de démonstration » qui fait tout ceci automatiquement (voir [GUIDE_ETAPE_5.md](GUIDE_ETAPE_5.md), A4). La méthode manuelle ci-dessous reste valable.
+
 Ces PDF permettront de tester le téléchargement dans l'application. Ils se trouvent dans le dossier `supabase/demo/rapports/` du dépôt. Pour chacun : l'ouvrir sur GitHub, cliquer sur **Download** (ou **View raw**), puis l'enregistrer sur l'iPad.
 
 Dans Supabase, menu **Storage › documents**, recréer les dossiers ci-dessous avec **Create folder**, en **copiant-collant** les noms, puis déposer le PDF avec **Upload file**.

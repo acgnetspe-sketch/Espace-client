@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { useConnexion } from '../lib/auth';
 import { Logo } from '../composants/Communs';
 import { PiedDePage } from '../composants/MiseEnPage';
+import { COMPTES_DEMO, modeDemo } from '../lib/demo';
 
 type Etape = { type: 'saisie' } | { type: 'envoye'; email: string };
 
@@ -122,9 +123,68 @@ export function Connexion() {
             </>
           )}
         </div>
+        {modeDemo && <ConnexionDemo />}
       </main>
 
       <PiedDePage />
+    </div>
+  );
+}
+
+/**
+ * Site de démonstration uniquement : connexion par mot de passe aux comptes
+ * fictifs, pour ne pas dépendre de la réception d'un e-mail sur un salon.
+ * Les mots de passe sont définis dans Supabase (supabase/demo/preparer_demo.sql),
+ * jamais dans le code.
+ */
+function ConnexionDemo() {
+  const [email, setEmail] = useState<string>(COMPTES_DEMO[0].email);
+  const [motDePasse, setMotDePasse] = useState('');
+  const [erreur, setErreur] = useState<string | null>(null);
+  const [enCours, setEnCours] = useState(false);
+
+  async function connecter(e: FormEvent) {
+    e.preventDefault();
+    setEnCours(true);
+    setErreur(null);
+    const { error } = await supabase.auth.signInWithPassword({ email, password: motDePasse });
+    setEnCours(false);
+    if (error) setErreur('Mot de passe incorrect pour ce compte de démonstration.');
+  }
+
+  return (
+    <div className="carte" style={{ marginTop: '1rem', borderTop: '4px solid var(--jaune)' }}>
+      <h2>Démonstration</h2>
+      <p className="secondaire">Toutes les données de ce site sont fictives.</p>
+      {erreur && (
+        <div className="alerte alerte-danger" role="alert" style={{ marginBottom: '1rem' }}>
+          <p>{erreur}</p>
+        </div>
+      )}
+      <form onSubmit={connecter}>
+        <label htmlFor="demo-compte">Compte</label>
+        <select id="demo-compte" value={email} onChange={(e) => setEmail(e.target.value)}>
+          {COMPTES_DEMO.map((c) => (
+            <option key={c.email} value={c.email}>
+              {c.libelle}
+            </option>
+          ))}
+        </select>
+        <label htmlFor="demo-mdp" style={{ marginTop: '0.75rem' }}>
+          Mot de passe de démonstration
+        </label>
+        <input
+          id="demo-mdp"
+          type="password"
+          autoComplete="current-password"
+          required
+          value={motDePasse}
+          onChange={(e) => setMotDePasse(e.target.value)}
+        />
+        <button type="submit" className="bouton bouton-jaune" disabled={enCours} style={{ width: '100%', marginTop: '1rem' }}>
+          {enCours ? 'Connexion…' : 'Entrer dans la démonstration'}
+        </button>
+      </form>
     </div>
   );
 }

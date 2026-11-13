@@ -1,6 +1,7 @@
 import { NavLink, Link, Outlet, useLocation } from 'react-router';
 import { useConnexion } from '../lib/auth';
 import { Logo } from './Communs';
+import { modeDemo } from '../lib/demo';
 
 /** Cadre commun à tous les écrans connectés : en-tête, navigation, pied de page. */
 export function MiseEnPage() {
@@ -11,6 +12,11 @@ export function MiseEnPage() {
 
   return (
     <>
+      {modeDemo && (
+        <div className="bandeau-demo" role="note">
+          Démonstration – toutes les données affichées sont fictives
+        </div>
+      )}
       <header className={`entete${estAdmin ? ' entete-admin' : ''}`}>
         <div className="entete-haut">
           <div>

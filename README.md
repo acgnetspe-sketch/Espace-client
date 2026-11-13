@@ -7,12 +7,13 @@ Espace sécurisé où chaque exploitant client d'ACG NET SPE (nettoyage et débr
 - Mise en ligne d'essai et vérification des écrans client : [docs/GUIDE_ETAPE_2.md](docs/GUIDE_ETAPE_2.md)
 - Administration (fonction d'invitation, essais) : [docs/GUIDE_ETAPE_3.md](docs/GUIDE_ETAPE_3.md)
 - Photos, demandes et e-mails automatiques : [docs/GUIDE_ETAPE_4.md](docs/GUIDE_ETAPE_4.md)
+- Mise en service et site de démonstration : [docs/GUIDE_ETAPE_5.md](docs/GUIDE_ETAPE_5.md)
 
 ## Technique
 
 - Interface : Vite, React 19, React Router et TypeScript ; police Inter hébergée avec le site (aucun appel à Google)
 - Base de données, connexion par lien magique, fichiers privés : Supabase, région Paris (eu-west-3)
-- Hébergement de l'interface : Netlify
+- Hébergement de l'interface : Netlify (un site de production, un site de démonstration)
 - E-mails automatiques : Brevo (société française, données dans l'UE), appelé par une Edge Function
 
 ## Avancement
@@ -23,7 +24,7 @@ Espace sécurisé où chaque exploitant client d'ACG NET SPE (nettoyage et débr
 | 2 | Connexion par lien magique et écrans client en lecture | Fait |
 | 3 | Écrans administrateur : clients et invitations, sites et import CSV, interventions, rapports PDF, publication | Fait |
 | 4 | Photos avant/après, demandes des clients, e-mails automatiques (V2) | Fait |
-| 5 | Mise en ligne sur Netlify | À faire |
+| 5 | Mise en service : production et site de démonstration séparés, comptes de démonstration | Prêt (réglages à faire, voir le guide) |
 
 ## Organisation du dépôt
 
@@ -40,7 +41,9 @@ supabase/
   tests/
     isolement.test.sql   Tests d'isolement entre clients (éditeur SQL de Supabase)
     local/               Lancement des mêmes tests sur un PostgreSQL local
-  demo/rapports/   Rapports PDF factices
+  demo/            Rapports PDF factices, scripts du projet de démonstration (mots de passe, remise à neuf)
+  production/      Script de retrait des données de démonstration
+public/demo/       Fichiers fictifs installés sur le site de démonstration
 scripts/           Petits outils (génération des PDF factices)
 docs/              Guides
 ```
@@ -56,6 +59,7 @@ docs/              Guides
 - Les photos sont réduites dans le navigateur (2000 px, JPEG) avant l'envoi, et suivent les mêmes règles que les rapports : visibles du client seulement après publication.
 - Aucune clé secrète dans le dépôt : `.env` est ignoré par Git, et `.env.example` ne contient pas de valeurs.
 - Le dépôt ne contient que des données fictives.
+- Production et démonstration sont deux projets Supabase séparés. La connexion par mot de passe n'existe que sur le site de démonstration (`VITE_MODE_DEMO=true`) : elle est retirée du code de la version production à la construction. En production, aucun compte n'a de mot de passe.
 
 ## Lancer l'application sur un ordinateur
 

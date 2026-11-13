@@ -822,3 +822,14 @@ legend {
   text-align: center;
   line-height: 1.25rem;
 }
+
+/* Site de démonstration */
+.bandeau-demo {
+  background: var(--jaune);
+  color: var(--bleu-nuit);
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 0.35rem 1rem;
+  letter-spacing: 0.02em;
+}

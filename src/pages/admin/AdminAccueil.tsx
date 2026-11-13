@@ -8,6 +8,7 @@ import {
   marquerAnomalieTraitee,
 } from '../../lib/admin';
 import { LIBELLE_DEMANDE } from '../../lib/libelles';
+import { installerFichiersDemo, modeDemo } from '../../lib/demo';
 import { chargerAlertes } from '../../lib/requetes';
 import { useChargement } from '../../lib/useChargement';
 import { aujourdhuiParis, formaterDate, formaterPeriode, pluriel } from '../../lib/formats';
@@ -60,6 +61,22 @@ export function AdminAccueil() {
         </Link>
       </div>
       <AfficherMessage message={action.message} />
+      {modeDemo && (
+        <div className="alerte alerte-attention" style={{ marginBottom: '1rem' }}>
+          <p>
+            <strong>Site de démonstration.</strong> Si les rapports ou les photos de démonstration ne s’ouvrent pas,
+            installez-les (opération sans risque, à refaire après une réinitialisation).
+          </p>
+          <button
+            type="button"
+            className="bouton bouton-secondaire bouton-petit"
+            disabled={action.enCours}
+            onClick={() => action.executer(installerFichiersDemo, (n) => `${n} fichiers de démonstration installés.`)}
+          >
+            Installer les fichiers de démonstration
+          </button>
+        </div>
+      )}
 
       <Etat etat={etat}>
         {(d) => {
